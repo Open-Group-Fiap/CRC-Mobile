@@ -74,7 +74,11 @@ fun LoginScreen(navController: NavController) {
             }
         }
         Button(
-            onClick = { navController.navigate("register") },
+            onClick = {
+                navController.navigate("register") {
+                    popUpTo(navController.graph.startDestinationId)
+                }
+            },
             colors = ButtonDefaults.buttonColors(containerColor = OppostColor)
         ) {
             Text("Registrar-se")

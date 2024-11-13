@@ -122,7 +122,11 @@ fun RegisterScreen(navController: NavController) {
             }
         }
         Button(
-            onClick = { navController.navigate("login") },
+            onClick = {
+                navController.navigate("login") {
+                    popUpTo(navController.graph.startDestinationId)
+                }
+            },
             colors = ButtonDefaults.buttonColors(containerColor = OppostColor)
         )
         {
