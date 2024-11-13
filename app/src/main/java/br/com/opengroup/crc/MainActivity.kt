@@ -28,6 +28,8 @@ import androidx.navigation.compose.rememberNavController
 import br.com.opengroup.crc.screens.DashboardScreen
 import br.com.opengroup.crc.screens.LoginScreen
 import br.com.opengroup.crc.screens.RegisterScreen
+import br.com.opengroup.crc.screens.StoreScreen
+import br.com.opengroup.crc.screens.UserScreen
 import br.com.opengroup.crc.ui.theme.ButtonLabel
 import br.com.opengroup.crc.ui.theme.CRCTheme
 import br.com.opengroup.crc.ui.theme.LabelLink
@@ -58,6 +60,12 @@ class MainActivity : ComponentActivity() {
                         }
                         composable("dashboard") {
                             DashboardScreen(navController)
+                        }
+                        composable("store") {
+                            StoreScreen(navController)
+                        }
+                        composable("user") {
+                            UserScreen(navController)
                         }
                     }
                 }
