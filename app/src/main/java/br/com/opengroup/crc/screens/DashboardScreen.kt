@@ -12,7 +12,7 @@ import br.com.opengroup.crc.screens.fragments.TopNavBarComponent
 @Composable
 fun DashboardScreen(navController: NavController) {
     Column {
-        TopNavBarComponent("Dashboard")
+        TopNavBarComponent("Dashboard", navController)
         Text("Dashboard")
         Button(onClick = { navController.navigate("store") }) {
             Text("Store")

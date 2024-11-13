@@ -17,15 +17,15 @@ private val DarkColorScheme = darkColorScheme(
     primary = MainColor,
     secondary = SecondaryColor,
     tertiary = ThirdColor,
-
-)
+    
+    )
 
 private val LightColorScheme = lightColorScheme(
     primary = MainColor,
     secondary = SecondaryColor,
     tertiary = ThirdColor,
 
-)
+    )
 
 @Composable
 fun CRCTheme(
