@@ -11,8 +11,8 @@ import br.com.opengroup.crc.screens.fragments.TopNavBarComponent
 @Composable
 fun StoreScreen(navController: NavController) {
     Column {
-        TopNavBarComponent("Store", navController)
-        Text("Store")
+        TopNavBarComponent("Loja", navController)
+        Text("Loja")
     }
 }
 
