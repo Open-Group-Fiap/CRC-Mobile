@@ -13,7 +13,7 @@ class RetrofitHelper {
             .connectTimeout(300, TimeUnit.SECONDS)
             .build()
         val retrofit = Retrofit.Builder()
-            .baseUrl("https://crc-api.azurewebsites.net/")
+            .baseUrl("https://crc-op.azurewebsites.net/")
             .addConverterFactory(GsonConverterFactory.create())
             .client(okHttpClient)
             .build()

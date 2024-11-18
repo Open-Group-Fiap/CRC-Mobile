@@ -9,7 +9,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:393520017735:android:0ba81162e54cf0d1d01c62",
         "android_client_info": {
-          "package_name": "br.com.opengroup.crc.api"
+          "package_name": "br.com.opengroup.crc"
         }
       },
       "oauth_client": [],
