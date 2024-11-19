@@ -27,6 +27,5 @@ interface MoradorApi {
         @Body morador: MoradorRequest
     ): Response<Morador>
 
-    @GET("/randomFatura/{id}")
-    suspend fun randomFatura(@Path("id") id: String): Response<Fatura>
+
 }
