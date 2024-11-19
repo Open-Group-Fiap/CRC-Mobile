@@ -1,6 +1,7 @@
 package br.com.opengroup.crc.models
 
 data class Auth(
-    val token: String,
-    val refreshToken: String
+    val id: Int,
+    val email: String,
+    val hashSenha: String,
 )

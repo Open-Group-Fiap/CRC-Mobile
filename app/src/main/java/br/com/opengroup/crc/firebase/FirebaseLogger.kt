@@ -1,4 +1,4 @@
-package br.com.opengroup.crc.api
+package br.com.opengroup.crc.firebase
 
 import com.google.firebase.firestore.FirebaseFirestore
 

@@ -1,11 +1,12 @@
-package br.com.opengroup.crc.api
+package br.com.opengroup.crc.cache
 
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.content.ContentValues
 
-class LocalDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
+class LocalDatabase(context: Context) :
+    SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
     companion object {
         private const val DATABASE_NAME = "localDatabase.db"
@@ -16,7 +17,8 @@ class LocalDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME,
     }
 
     override fun onCreate(db: SQLiteDatabase) {
-        val createTable = "CREATE TABLE $TABLE_NAME ($COLUMN_ID INTEGER PRIMARY KEY, $COLUMN_EMAIL TEXT)"
+        val createTable =
+            "CREATE TABLE $TABLE_NAME ($COLUMN_ID INTEGER PRIMARY KEY, $COLUMN_EMAIL TEXT)"
         db.execSQL(createTable)
     }
 
@@ -33,7 +35,15 @@ class LocalDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME,
 
         val cursor = db.query(TABLE_NAME, arrayOf(COLUMN_ID), null, null, null, null, null)
         if (cursor.moveToFirst()) {
-            db.update(TABLE_NAME, contentValues, "$COLUMN_ID = ?", arrayOf(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ID))))
+            db.update(
+                TABLE_NAME, contentValues, "$COLUMN_ID = ?", arrayOf(
+                    cursor.getString(
+                        cursor.getColumnIndexOrThrow(
+                            COLUMN_ID
+                        )
+                    )
+                )
+            )
         } else {
             db.insert(TABLE_NAME, null, contentValues)
         }
