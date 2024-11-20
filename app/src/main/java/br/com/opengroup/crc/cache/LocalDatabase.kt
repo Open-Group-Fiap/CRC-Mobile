@@ -10,15 +10,16 @@ class LocalDatabase(context: Context) :
 
     companion object {
         private const val DATABASE_NAME = "localDatabase.db"
-        private const val DATABASE_VERSION = 1
-        private const val TABLE_NAME = "UserEmail"
+        private const val DATABASE_VERSION = 2
+        private const val TABLE_NAME = "UserCredentials"
         private const val COLUMN_ID = "id"
         private const val COLUMN_EMAIL = "email"
+        private const val COLUMN_PASSWORD = "password"
     }
 
     override fun onCreate(db: SQLiteDatabase) {
         val createTable =
-            "CREATE TABLE $TABLE_NAME ($COLUMN_ID INTEGER PRIMARY KEY, $COLUMN_EMAIL TEXT)"
+            "CREATE TABLE $TABLE_NAME ($COLUMN_ID INTEGER PRIMARY KEY, $COLUMN_EMAIL TEXT, $COLUMN_PASSWORD TEXT)"
         db.execSQL(createTable)
     }
 
@@ -27,10 +28,11 @@ class LocalDatabase(context: Context) :
         onCreate(db)
     }
 
-    fun saveEmail(email: String) {
+    fun saveCredentials(email: String, password: String) {
         val db = this.writableDatabase
         val contentValues = ContentValues().apply {
             put(COLUMN_EMAIL, email)
+            put(COLUMN_PASSWORD, password)
         }
 
         val cursor = db.query(TABLE_NAME, arrayOf(COLUMN_ID), null, null, null, null, null)
@@ -51,21 +53,31 @@ class LocalDatabase(context: Context) :
         db.close()
     }
 
-    fun clearEmail() {
+    fun clearCredentials() {
         val db = this.writableDatabase
         db.delete(TABLE_NAME, null, null)
         db.close()
     }
 
-    fun getEmail(): String? {
+    fun getCredentials(): Pair<String?, String?> {
         val db = this.readableDatabase
-        val cursor = db.query(TABLE_NAME, arrayOf(COLUMN_EMAIL), null, null, null, null, null)
+        val cursor = db.query(
+            TABLE_NAME,
+            arrayOf(COLUMN_EMAIL, COLUMN_PASSWORD),
+            null,
+            null,
+            null,
+            null,
+            null
+        )
         var email: String? = null
+        var password: String? = null
         if (cursor.moveToFirst()) {
             email = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_EMAIL))
+            password = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PASSWORD))
         }
         cursor.close()
         db.close()
-        return email
+        return Pair(email, password)
     }
 }

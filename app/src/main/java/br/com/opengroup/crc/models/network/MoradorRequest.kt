@@ -1,6 +1,6 @@
 package br.com.opengroup.crc.models.network
 
-data class MoradorRequest (
+data class MoradorRequest(
     val idCondominio: Int,
     val email: String,
     val senha: String,

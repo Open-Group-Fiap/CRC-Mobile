@@ -1,5 +1,6 @@
 package br.com.opengroup.crc.screens
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -17,6 +18,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -34,6 +36,7 @@ import br.com.opengroup.crc.ui.theme.Typography
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun LoginScreen(navController: NavController) {
@@ -66,32 +69,60 @@ fun LoginScreen(navController: NavController) {
                 onValueChange = { password.value = it },
                 label = { Text("Senha", style = LabelInput) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                visualTransformation = PasswordVisualTransformation(),
                 textStyle = LabelInput
             )
             Button(
                 onClick = {
+                    if (email.value.isEmpty() || password.value.isEmpty()) {
+                        Toast.makeText(
+                            navController.context,
+                            "Preencha todos os campos",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        return@Button
+                    }
                     CoroutineScope(Dispatchers.IO).launch {
                         val loginApi = RetrofitHelper.retrofit.create(MoradorApi::class.java)
                         try {
                             val res = loginApi.login(LoginRequest(email.value, password.value))
                             if (res.isSuccessful) {
                                 logFirebaseApi("Login realizado com sucesso", email.value)
-                                LocalDatabase(navController.context).saveEmail(email.value)
-                                navController.navigate("dashboard") {
-                                    popUpTo("home") {
-                                        inclusive = true
+                                LocalDatabase(navController.context).saveCredentials(
+                                    email.value,
+                                    password.value
+                                )
+                                withContext(Dispatchers.Main) {
+                                    navController.navigate("dashboard") {
+                                        popUpTo("home") {
+                                            inclusive = true
+                                        }
                                     }
                                 }
                             } else {
-                                logFirebaseApi("Erro ao realizar login", email.value)
-                                Toast.makeText(
-                                    navController.context,
-                                    "Login invalido",
-                                    Toast.LENGTH_SHORT
-                                ).show()
+                                val error = res.errorBody()?.string()
+                                logFirebaseApi(
+                                    "Erro ao realizar login, ${
+                                        (error) ?: "Erro desconhecido"
+                                    }", email.value
+                                )
+                                withContext(Dispatchers.Main) {
+                                    Toast.makeText(
+                                        navController.context,
+                                        "Erro: ${error ?: "Erro desconhecido"}",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
                             }
                         } catch (e: Exception) {
                             logFirebaseApi("Erro ao realizar login ${e.message}", email.value)
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(
+                                    navController.context,
+                                    "Erro: ${e.message}",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
                         }
                     }
                 },

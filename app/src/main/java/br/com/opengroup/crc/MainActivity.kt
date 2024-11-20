@@ -52,19 +52,18 @@ import kotlinx.coroutines.launch
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        CoroutineScope(Dispatchers.IO).launch{
+        CoroutineScope(Dispatchers.IO).launch {
             val bootApi = RetrofitHelper.retrofit.create(BootApi::class.java)
-            val email = LocalDatabase(this@MainActivity).getEmail() ?: "Usuário não logado"
-            try{
+            val email =
+                LocalDatabase(this@MainActivity).getCredentials().first ?: "Usuário não logado"
+            try {
                 val res = bootApi.boot()
-                if(res.isSuccessful){
+                if (res.isSuccessful) {
                     logFirebaseApi("Servidor iniciado com sucesso", email)
-                }
-                else{
+                } else {
                     logFirebaseApi("Erro ao iniciar servidor", email)
                 }
-            }
-            catch (e: Exception){
+            } catch (e: Exception) {
                 logFirebaseApi("Erro ao iniciar servidor ${e.message}", email)
             }
         }
@@ -106,7 +105,9 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun Greeting(navController: NavController) {
-    
+    if (LocalDatabase(navController.context).getCredentials().first != null) {
+        navController.navigate("dashboard")
+    }
     Column(
         Modifier
             .fillMaxSize()
