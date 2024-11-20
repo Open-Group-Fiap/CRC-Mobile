@@ -20,11 +20,19 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import br.com.opengroup.crc.api.MoradorApi
+import br.com.opengroup.crc.api.RetrofitHelper
+import br.com.opengroup.crc.cache.LocalDatabase
+import br.com.opengroup.crc.firebase.logFirebaseApi
+import br.com.opengroup.crc.models.network.MoradorRequest
 import br.com.opengroup.crc.ui.theme.CRCTheme
 import br.com.opengroup.crc.ui.theme.LabelInput
 import br.com.opengroup.crc.ui.theme.MainColor
 import br.com.opengroup.crc.ui.theme.OppostColor
 import br.com.opengroup.crc.ui.theme.Typography
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @Composable
 fun RegisterScreen(navController: NavController) {
@@ -32,7 +40,6 @@ fun RegisterScreen(navController: NavController) {
     val password = remember { mutableStateOf("") }
     val confirmPassword = remember { mutableStateOf("") }
     val cpf = remember { mutableStateOf("") }
-    val condoCode = remember { mutableStateOf("") }
     val name = remember { mutableStateOf("") }
     val residence = remember { mutableStateOf("") }
     val numPeople = remember { mutableStateOf("") }
@@ -83,12 +90,6 @@ fun RegisterScreen(navController: NavController) {
                 textStyle = LabelInput
             )
             OutlinedTextField(
-                value = condoCode.value,
-                onValueChange = { condoCode.value = it },
-                label = { Text("Código do condomínio", style = LabelInput) },
-                textStyle = LabelInput
-            )
-            OutlinedTextField(
                 value = name.value,
                 onValueChange = { name.value = it },
                 label = { Text("Nome", style = LabelInput) },
@@ -108,12 +109,38 @@ fun RegisterScreen(navController: NavController) {
                 textStyle = LabelInput
             )
             Button(
-                onClick = {/*TODO*/
-                    navController.navigate("dashboard") {
-                        popUpTo("home") {
-                            inclusive = true
+                onClick = {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        val registerApi = RetrofitHelper.retrofit.create(MoradorApi::class.java)
+                        try {
+                            val resquest = registerApi.register(
+                                MoradorRequest(
+                                    1, // Por enquanto, o id do condomínio é fixo
+                                    email.value,
+                                    password.value,
+                                    cpf.value,
+                                    name.value,
+                                    numPeople.value.toInt(),
+                                    residence.value,
+                                )
+                            )
+                            if (resquest.isSuccessful) {
+                                logFirebaseApi("Cadastro realizado com sucesso", email.value)
+                                LocalDatabase(navController.context).saveEmail(email.value)
+                                navController.navigate("dashboard") {
+                                    popUpTo("home") {
+                                        inclusive = true
+                                    }
+                                }
+                            } else {
+                                logFirebaseApi("Erro ao realizar cadastro", email.value)
+                            }
+
+                        } catch (e: Exception) {
+                            logFirebaseApi("Erro ao realizar cadastro ${e.message}", email.value)
                         }
                     }
+
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = MainColor)
             )

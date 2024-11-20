@@ -1,6 +1,9 @@
 package br.com.opengroup.crc
 
 import android.os.Bundle
+import android.os.Looper
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
@@ -28,6 +31,10 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import br.com.opengroup.crc.api.BootApi
+import br.com.opengroup.crc.api.RetrofitHelper
+import br.com.opengroup.crc.cache.LocalDatabase
+import br.com.opengroup.crc.firebase.logFirebaseApi
 import br.com.opengroup.crc.screens.DashboardScreen
 import br.com.opengroup.crc.screens.LoginScreen
 import br.com.opengroup.crc.screens.RegisterScreen
@@ -38,10 +45,29 @@ import br.com.opengroup.crc.ui.theme.CRCTheme
 import br.com.opengroup.crc.ui.theme.LabelLink
 import br.com.opengroup.crc.ui.theme.MainColor
 import br.com.opengroup.crc.ui.theme.Typography
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        CoroutineScope(Dispatchers.IO).launch{
+            val bootApi = RetrofitHelper.retrofit.create(BootApi::class.java)
+            val email = LocalDatabase(this@MainActivity).getEmail() ?: "Usuário não logado"
+            try{
+                val res = bootApi.boot()
+                if(res.isSuccessful){
+                    logFirebaseApi("Servidor iniciado com sucesso", email)
+                }
+                else{
+                    logFirebaseApi("Erro ao iniciar servidor", email)
+                }
+            }
+            catch (e: Exception){
+                logFirebaseApi("Erro ao iniciar servidor ${e.message}", email)
+            }
+        }
 
         setContent {
             CRCTheme {

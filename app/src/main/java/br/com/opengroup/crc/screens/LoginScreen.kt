@@ -1,5 +1,6 @@
 package br.com.opengroup.crc.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,11 +21,19 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import br.com.opengroup.crc.api.MoradorApi
+import br.com.opengroup.crc.api.RetrofitHelper
+import br.com.opengroup.crc.cache.LocalDatabase
+import br.com.opengroup.crc.firebase.logFirebaseApi
+import br.com.opengroup.crc.models.network.LoginRequest
 import br.com.opengroup.crc.ui.theme.CRCTheme
 import br.com.opengroup.crc.ui.theme.LabelInput
 import br.com.opengroup.crc.ui.theme.MainColor
 import br.com.opengroup.crc.ui.theme.OppostColor
 import br.com.opengroup.crc.ui.theme.Typography
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @Composable
 fun LoginScreen(navController: NavController) {
@@ -61,10 +70,28 @@ fun LoginScreen(navController: NavController) {
             )
             Button(
                 onClick = {
-                    /*TODO: Implement login logic*/
-                    navController.navigate("dashboard") {
-                        popUpTo("home") {
-                            inclusive = true
+                    CoroutineScope(Dispatchers.IO).launch {
+                        val loginApi = RetrofitHelper.retrofit.create(MoradorApi::class.java)
+                        try {
+                            val res = loginApi.login(LoginRequest(email.value, password.value))
+                            if (res.isSuccessful) {
+                                logFirebaseApi("Login realizado com sucesso", email.value)
+                                LocalDatabase(navController.context).saveEmail(email.value)
+                                navController.navigate("dashboard") {
+                                    popUpTo("home") {
+                                        inclusive = true
+                                    }
+                                }
+                            } else {
+                                logFirebaseApi("Erro ao realizar login", email.value)
+                                Toast.makeText(
+                                    navController.context,
+                                    "Login invalido",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        } catch (e: Exception) {
+                            logFirebaseApi("Erro ao realizar login ${e.message}", email.value)
                         }
                     }
                 },
