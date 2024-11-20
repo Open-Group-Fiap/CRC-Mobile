@@ -5,11 +5,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -44,6 +46,7 @@ fun UserScreen(navController: NavController) {
     val newEmail = remember { mutableStateOf("") }
     val newPassword = remember { mutableStateOf("") }
     val newQtyResidents = remember { mutableStateOf("") }
+    val openDialog = remember { mutableStateOf(false) }
     val error = remember { mutableStateOf("") }
     if (user.value == null) {
         LaunchedEffect(Unit) {
@@ -210,8 +213,85 @@ fun UserScreen(navController: NavController) {
             ) {
                 Text("Sair")
             }
+            Button(
+                onClick = {
+                    openDialog.value = true
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
+            ) {
+                Text("Deletar Conta")
+            }
             if (error.value.isNotEmpty()) {
                 Text(error.value, style = Typography.bodySmall, color = Color.Red)
+            }
+            if (openDialog.value) {
+                AlertDialog(
+                    onDismissRequest = {
+                        openDialog.value = false
+                    },
+                    title = { Text("Deletar conta") },
+                    text = { Text("Tem certeza que deseja deletar sua conta?") },
+                    confirmButton = {
+                        Button(
+                            onClick = {
+                                CoroutineScope(Dispatchers.IO).launch {
+                                    val userApi =
+                                        RetrofitHelper.retrofit.create(MoradorApi::class.java)
+                                    try {
+                                        val res = userApi.deleteMorador(user.value!!.id)
+                                        if (res.isSuccessful) {
+                                            logFirebaseApi(
+                                                "Usuário deletado com sucesso",
+                                                LocalDatabase(navController.context).getCredentials().first.toString()
+                                            )
+                                            withContext(Dispatchers.Main) {
+                                                Toast.makeText(
+                                                    navController.context,
+                                                    "Usuário deletado com sucesso",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                                LocalDatabase(navController.context).clearCredentials()
+                                                navController.navigate("home") {
+                                                    popUpTo("home") {
+                                                        inclusive = true
+                                                    }
+                                                }
+                                            }
+                                        } else {
+                                            error.value =
+                                                res.errorBody()?.string() ?: "Erro desconhecido"
+                                            logFirebaseApi(
+                                                "Erro ao deletar usuário ${error.value}",
+                                                LocalDatabase(navController.context).getCredentials().first.toString()
+                                            )
+                                            withContext(Dispatchers.Main) {
+                                                Toast.makeText(
+                                                    navController.context,
+                                                    "Erro ao deletar usuário",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                            }
+                                        }
+                                    } catch (e: Exception) {
+                                        logFirebaseApi(
+                                            "Erro ao deletar usuário ${e.message}",
+                                            LocalDatabase(navController.context).getCredentials().first.toString()
+                                        )
+                                    }
+                                }
+                            }
+                        ) {
+                            Text("Sim")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = {
+                            openDialog.value = false
+                        }) {
+                            Text("Cancelar")
+                        }
+                    }
+                )
             }
 
         } else {

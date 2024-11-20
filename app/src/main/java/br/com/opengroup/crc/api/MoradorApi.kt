@@ -6,6 +6,7 @@ import br.com.opengroup.crc.models.network.LoginRequest
 import br.com.opengroup.crc.models.network.MoradorRequest
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.PUT
@@ -27,5 +28,7 @@ interface MoradorApi {
         @Body morador: MoradorRequest
     ): Response<Morador>
 
+    @DELETE("/morador/{id}")
+    suspend fun deleteMorador(@Path("id") id: String): Response<Void>
 
 }

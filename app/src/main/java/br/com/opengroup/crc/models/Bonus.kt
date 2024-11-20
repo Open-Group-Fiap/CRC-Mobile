@@ -6,5 +6,5 @@ data class Bonus(
     val nome: String,
     val descricao: String,
     val custo: Int,
-    val qtdMax: Int
+    val qtd: Int
 )
