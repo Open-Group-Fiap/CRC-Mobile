@@ -1,9 +1,12 @@
 package br.com.opengroup.crc.screens
 
 import android.widget.Toast
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -24,6 +27,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import br.com.opengroup.crc.api.MoradorApi
@@ -82,220 +86,233 @@ fun UserScreen(navController: NavController) {
             }
         }
     }
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text("Dados de usuário", style = Typography.titleLarge)
-        if (user.value != null) {
-            // User form data
-            OutlinedTextField(
-                value = user.value!!.nome,
-                enabled = false,
-                onValueChange = { },
-                label = { Text("Nome") },
-                textStyle = LabelInput
-            )
-            OutlinedTextField(
-                value = newEmail.value,
-                onValueChange = { newEmail.value = it },
-                label = { Text("Email") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                textStyle = LabelInput
-            )
-            OutlinedTextField(
-                value = newPassword.value,
-                onValueChange = { newPassword.value = it },
-                label = {
-                    Text(
-                        "Senha (mantenha vazia para não mudar)",
-                        style = Typography.bodySmall
-                    )
-                },
-                visualTransformation = PasswordVisualTransformation(),
-                textStyle = LabelInput
-            )
-            OutlinedTextField(
-                value = user.value!!.cpf,
-                enabled = false,
-                onValueChange = {},
-                label = { Text("CPF") },
-                textStyle = LabelInput
-            )
-            OutlinedTextField(
-                value = newQtyResidents.value,
-                onValueChange = { newQtyResidents.value = it },
-                label = { Text("Quantidade de moradores") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                textStyle = LabelInput
-            )
-            OutlinedTextField(
-                value = user.value!!.condominio.nome,
-                enabled = false,
-                onValueChange = {},
-                label = { Text("Condomínio") },
-                textStyle = LabelInput
-            )
-            Button(onClick = {
-                if (newEmail.value.isEmpty() || newPassword.value.isEmpty() || newQtyResidents.value.isEmpty()) {
-                    Toast.makeText(
-                        navController.context,
-                        "Preencha todos os campos",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    return@Button
-                }
-                CoroutineScope(Dispatchers.IO).launch {
-                    val userApi = RetrofitHelper.retrofit.create(MoradorApi::class.java)
-                    val password =
-                        if (newPassword.value.isEmpty()) LocalDatabase(navController.context).getCredentials().second!! else newPassword.value
-                    try {
-                        val res = userApi.updateMorador(
-                            user.value!!.id,
-                            MoradorRequest(
-                                user.value!!.condominio.id,
-                                newEmail.value,
-                                password,
-                                user.value!!.cpf,
-                                user.value!!.nome,
-                                newQtyResidents.value.toInt(),
-                                user.value!!.identificadorRes
-                            )
-                        )
-                        if (res.isSuccessful) {
-                            logFirebaseApi(
-                                "Usuário atualizado com sucesso",
-                                LocalDatabase(navController.context).getCredentials().first.toString()
-                            )
-                            withContext(Dispatchers.Main) {
-                                Toast.makeText(
-                                    navController.context,
-                                    "Usuário atualizado com sucesso",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-                        } else {
-                            error.value = res.errorBody()?.string() ?: "Erro desconhecido"
-                            logFirebaseApi(
-                                "Erro ao atualizar usuário ${error.value}",
-                                LocalDatabase(navController.context).getCredentials().first.toString()
-                            )
-                            withContext(Dispatchers.Main) {
-                                Toast.makeText(
-                                    navController.context,
-                                    "Erro ao atualizar usuário",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-                        }
-                    } catch (e: Exception) {
-                        logFirebaseApi(
-                            "Erro ao atualizar usuário ${e.message}",
-                            LocalDatabase(navController.context).getCredentials().first.toString()
-                        )
-                    }
-                }
+    Column {
 
-            }) {
-                Text("Atualizar")
-            }
-            Button(
-                onClick = {
-                    LocalDatabase(navController.context).clearCredentials()
-                    navController.navigate("home") {
-                        popUpTo("home") {
-                            inclusive = true
-                        }
-                    }
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
-            ) {
-                Text("Sair")
-            }
-            Button(
-                onClick = {
-                    openDialog.value = true
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
-            ) {
-                Text("Deletar Conta")
-            }
-            if (error.value.isNotEmpty()) {
-                Text(error.value, style = Typography.bodySmall, color = Color.Red)
-            }
-            if (openDialog.value) {
-                AlertDialog(
-                    onDismissRequest = {
-                        openDialog.value = false
+        Image(
+            painter = androidx.compose.ui.res.painterResource(id = br.com.opengroup.crc.R.drawable.baseline_arrow_back_24),
+            contentDescription = "Back",
+            modifier = Modifier
+                .padding(12.dp)
+                .align(Alignment.Start)
+                .clickable(onClick = {
+                    navController.popBackStack()
+                })
+        )
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text("Dados de usuário", style = Typography.titleLarge)
+            if (user.value != null) {
+                // User form data
+                OutlinedTextField(
+                    value = user.value!!.nome,
+                    enabled = false,
+                    onValueChange = { },
+                    label = { Text("Nome") },
+                    textStyle = LabelInput
+                )
+                OutlinedTextField(
+                    value = newEmail.value,
+                    onValueChange = { newEmail.value = it },
+                    label = { Text("Email") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                    textStyle = LabelInput
+                )
+                OutlinedTextField(
+                    value = newPassword.value,
+                    onValueChange = { newPassword.value = it },
+                    label = {
+                        Text(
+                            "Senha (mantenha vazia para não mudar)",
+                            style = Typography.bodySmall
+                        )
                     },
-                    title = { Text("Deletar conta") },
-                    text = { Text("Tem certeza que deseja deletar sua conta?") },
-                    confirmButton = {
-                        Button(
-                            onClick = {
-                                CoroutineScope(Dispatchers.IO).launch {
-                                    val userApi =
-                                        RetrofitHelper.retrofit.create(MoradorApi::class.java)
-                                    try {
-                                        val res = userApi.deleteMorador(user.value!!.id)
-                                        if (res.isSuccessful) {
-                                            logFirebaseApi(
-                                                "Usuário deletado com sucesso",
-                                                LocalDatabase(navController.context).getCredentials().first.toString()
-                                            )
-                                            withContext(Dispatchers.Main) {
-                                                Toast.makeText(
-                                                    navController.context,
-                                                    "Usuário deletado com sucesso",
-                                                    Toast.LENGTH_SHORT
-                                                ).show()
-                                                LocalDatabase(navController.context).clearCredentials()
-                                                navController.navigate("home") {
-                                                    popUpTo("home") {
-                                                        inclusive = true
-                                                    }
-                                                }
-                                            }
-                                        } else {
-                                            error.value =
-                                                res.errorBody()?.string() ?: "Erro desconhecido"
-                                            logFirebaseApi(
-                                                "Erro ao deletar usuário ${error.value}",
-                                                LocalDatabase(navController.context).getCredentials().first.toString()
-                                            )
-                                            withContext(Dispatchers.Main) {
-                                                Toast.makeText(
-                                                    navController.context,
-                                                    "Erro ao deletar usuário",
-                                                    Toast.LENGTH_SHORT
-                                                ).show()
-                                            }
-                                        }
-                                    } catch (e: Exception) {
-                                        logFirebaseApi(
-                                            "Erro ao deletar usuário ${e.message}",
-                                            LocalDatabase(navController.context).getCredentials().first.toString()
-                                        )
-                                    }
+                    visualTransformation = PasswordVisualTransformation(),
+                    textStyle = LabelInput
+                )
+                OutlinedTextField(
+                    value = user.value!!.cpf,
+                    enabled = false,
+                    onValueChange = {},
+                    label = { Text("CPF") },
+                    textStyle = LabelInput
+                )
+                OutlinedTextField(
+                    value = newQtyResidents.value,
+                    onValueChange = { newQtyResidents.value = it },
+                    label = { Text("Quantidade de moradores") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    textStyle = LabelInput
+                )
+                OutlinedTextField(
+                    value = user.value!!.condominio.nome,
+                    enabled = false,
+                    onValueChange = {},
+                    label = { Text("Condomínio") },
+                    textStyle = LabelInput
+                )
+                Button(onClick = {
+                    if (newEmail.value.isEmpty() || newPassword.value.isEmpty() || newQtyResidents.value.isEmpty()) {
+                        Toast.makeText(
+                            navController.context,
+                            "Preencha todos os campos",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        return@Button
+                    }
+                    CoroutineScope(Dispatchers.IO).launch {
+                        val userApi = RetrofitHelper.retrofit.create(MoradorApi::class.java)
+                        val password =
+                            if (newPassword.value.isEmpty()) LocalDatabase(navController.context).getCredentials().second!! else newPassword.value
+                        try {
+                            val res = userApi.updateMorador(
+                                user.value!!.id,
+                                MoradorRequest(
+                                    user.value!!.condominio.id,
+                                    newEmail.value,
+                                    password,
+                                    user.value!!.cpf,
+                                    user.value!!.nome,
+                                    newQtyResidents.value.toInt(),
+                                    user.value!!.identificadorRes
+                                )
+                            )
+                            if (res.isSuccessful) {
+                                logFirebaseApi(
+                                    "Usuário atualizado com sucesso",
+                                    LocalDatabase(navController.context).getCredentials().first.toString()
+                                )
+                                withContext(Dispatchers.Main) {
+                                    Toast.makeText(
+                                        navController.context,
+                                        "Usuário atualizado com sucesso",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            } else {
+                                error.value = res.errorBody()?.string() ?: "Erro desconhecido"
+                                logFirebaseApi(
+                                    "Erro ao atualizar usuário ${error.value}",
+                                    LocalDatabase(navController.context).getCredentials().first.toString()
+                                )
+                                withContext(Dispatchers.Main) {
+                                    Toast.makeText(
+                                        navController.context,
+                                        "Erro ao atualizar usuário",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
                                 }
                             }
-                        ) {
-                            Text("Sim")
-                        }
-                    },
-                    dismissButton = {
-                        TextButton(onClick = {
-                            openDialog.value = false
-                        }) {
-                            Text("Cancelar")
+                        } catch (e: Exception) {
+                            logFirebaseApi(
+                                "Erro ao atualizar usuário ${e.message}",
+                                LocalDatabase(navController.context).getCredentials().first.toString()
+                            )
                         }
                     }
-                )
-            }
 
-        } else {
-            CircularProgressIndicator()
+                }) {
+                    Text("Atualizar")
+                }
+                Button(
+                    onClick = {
+                        LocalDatabase(navController.context).clearCredentials()
+                        navController.navigate("home") {
+                            popUpTo("home") {
+                                inclusive = true
+                            }
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                ) {
+                    Text("Sair")
+                }
+                Button(
+                    onClick = {
+                        openDialog.value = true
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
+                ) {
+                    Text("Deletar Conta")
+                }
+                if (error.value.isNotEmpty()) {
+                    Text(error.value, style = Typography.bodySmall, color = Color.Red)
+                }
+                if (openDialog.value) {
+                    AlertDialog(
+                        onDismissRequest = {
+                            openDialog.value = false
+                        },
+                        title = { Text("Deletar conta") },
+                        text = { Text("Tem certeza que deseja deletar sua conta?") },
+                        confirmButton = {
+                            Button(
+                                onClick = {
+                                    CoroutineScope(Dispatchers.IO).launch {
+                                        val userApi =
+                                            RetrofitHelper.retrofit.create(MoradorApi::class.java)
+                                        try {
+                                            val res = userApi.deleteMorador(user.value!!.id)
+                                            if (res.isSuccessful) {
+                                                logFirebaseApi(
+                                                    "Usuário deletado com sucesso",
+                                                    LocalDatabase(navController.context).getCredentials().first.toString()
+                                                )
+                                                withContext(Dispatchers.Main) {
+                                                    Toast.makeText(
+                                                        navController.context,
+                                                        "Usuário deletado com sucesso",
+                                                        Toast.LENGTH_SHORT
+                                                    ).show()
+                                                    LocalDatabase(navController.context).clearCredentials()
+                                                    navController.navigate("home") {
+                                                        popUpTo("home") {
+                                                            inclusive = true
+                                                        }
+                                                    }
+                                                }
+                                            } else {
+                                                error.value =
+                                                    res.errorBody()?.string() ?: "Erro desconhecido"
+                                                logFirebaseApi(
+                                                    "Erro ao deletar usuário ${error.value}",
+                                                    LocalDatabase(navController.context).getCredentials().first.toString()
+                                                )
+                                                withContext(Dispatchers.Main) {
+                                                    Toast.makeText(
+                                                        navController.context,
+                                                        "Erro ao deletar usuário",
+                                                        Toast.LENGTH_SHORT
+                                                    ).show()
+                                                }
+                                            }
+                                        } catch (e: Exception) {
+                                            logFirebaseApi(
+                                                "Erro ao deletar usuário ${e.message}",
+                                                LocalDatabase(navController.context).getCredentials().first.toString()
+                                            )
+                                        }
+                                    }
+                                }
+                            ) {
+                                Text("Sim")
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = {
+                                openDialog.value = false
+                            }) {
+                                Text("Cancelar")
+                            }
+                        }
+                    )
+                }
+
+            } else {
+                CircularProgressIndicator()
+            }
         }
     }
 }

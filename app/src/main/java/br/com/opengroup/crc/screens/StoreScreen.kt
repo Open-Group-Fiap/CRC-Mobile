@@ -1,9 +1,14 @@
 package br.com.opengroup.crc.screens
 
 import android.util.Log
+import android.widget.Toast
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.ScrollScope
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
@@ -32,6 +37,7 @@ import br.com.opengroup.crc.screens.fragments.TopNavBarComponent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun StoreScreen(navController: NavController) {
@@ -76,8 +82,28 @@ fun StoreScreen(navController: NavController) {
     }
     Column {
         TopNavBarComponent("Loja", navController)
-        Text("Pontos disponíveis: ${points.value}", style = TextStyle(fontSize = 24.sp))
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Image(
+                painter = androidx.compose.ui.res.painterResource(id = br.com.opengroup.crc.R.drawable.baseline_arrow_back_24),
+                contentDescription = "Back",
+                modifier = Modifier
+                    .padding(16.dp)
+                    .clickable(onClick = {
+                        navController.popBackStack()
+                    })
+            )
+            Text(
+                "Pontos disponíveis: ${points.value}",
+                style = TextStyle(fontSize = 24.sp),
+                modifier = Modifier.padding(16.dp)
+            )
+        }
+        LazyColumn(
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.padding(16.dp)
+        ) {
             bonusArray.value?.let { bonuses ->
                 items(bonuses) { bonus ->
                     Column {
@@ -109,15 +135,23 @@ fun StoreScreen(navController: NavController) {
                                                         1
                                                     )
                                                 )
-                                        if (response.isSuccessful || response.code() == 500) {
+                                        if (response.isSuccessful || response.code() == 500) { // Backend tends to crash when trying to buy a bonus
                                             reloadBonus.value = !reloadBonus.value
                                         } else {
+                                            val error = response.errorBody()?.string()
                                             logFirebaseApi(
                                                 "Erro ao resgatar bônus ${
-                                                    response.errorBody()?.string()
+                                                    error ?: response.message()
                                                 }",
                                                 LocalDatabase(navController.context).getCredentials().first.toString()
                                             )
+                                            withContext(Dispatchers.Main) {
+                                                Toast.makeText(
+                                                    navController.context,
+                                                    "Erro: ${error ?: response.message()}",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                            }
                                         }
                                     } catch (e: Exception) {
                                         logFirebaseApi(

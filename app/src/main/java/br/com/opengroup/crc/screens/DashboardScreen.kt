@@ -2,12 +2,14 @@ package br.com.opengroup.crc.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -48,36 +50,43 @@ fun DashboardScreen(navController: NavController) {
     }
 
     Column(
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         TopNavBarComponent("Dashboard", navController)
-        Text("Seja bem-vindo ao CRC!", style = Typography.titleLarge)
-        Text("Você possui ${points.value} pontos", style = Typography.titleMedium)
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
 
-        Button(onClick = { navController.navigate("store") }) {
-            Text("Gastar meus pontos")
-        }
-        Button(
-            onClick = {
-                CoroutineScope(Dispatchers.IO).launch {
-                    val faturaApi = RetrofitHelper.retrofit.create(FaturaApi::class.java)
-                    try {
-                        val response = faturaApi.randomFatura(id.value)
-                        if (response.isSuccessful) {
-                            logFirebaseApi("Fatura gerada com sucesso", id.value)
-                            reloadPoints.value = !reloadPoints.value
-                        } else {
-                            logFirebaseApi("Erro ao gerar fatura", id.value)
-                        }
-                    } catch (e: Exception) {
-                        logFirebaseApi("Erro ao gerar fatura ${e.message}", id.value)
-                    }
-                }
-
-            },
-            enabled = points.value != "..."
         ) {
-            Text("(DEBUG) Ganhe pontos")
+
+            Text("Seja bem-vindo ao CRC!", style = Typography.titleLarge)
+            Text("Você possui ${points.value} pontos", style = Typography.titleMedium)
+
+            Button(onClick = { navController.navigate("store") }) {
+                Text("Gastar meus pontos")
+            }
+            Button(
+                onClick = {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        val faturaApi = RetrofitHelper.retrofit.create(FaturaApi::class.java)
+                        try {
+                            val response = faturaApi.randomFatura(id.value)
+                            if (response.isSuccessful) {
+                                logFirebaseApi("Fatura gerada com sucesso", id.value)
+                                reloadPoints.value = !reloadPoints.value
+                            } else {
+                                logFirebaseApi("Erro ao gerar fatura", id.value)
+                            }
+                        } catch (e: Exception) {
+                            logFirebaseApi("Erro ao gerar fatura ${e.message}", id.value)
+                        }
+                    }
+
+                },
+                enabled = points.value != "..."
+            ) {
+                Text("(DEBUG) Ganhe pontos")
+            }
         }
     }
 }
