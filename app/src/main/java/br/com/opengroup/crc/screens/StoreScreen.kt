@@ -135,7 +135,7 @@ fun StoreScreen(navController: NavController) {
                                                         1
                                                     )
                                                 )
-                                        if (response.isSuccessful || response.code() == 500) { // Backend tends to crash when trying to buy a bonus
+                                        if (response.isSuccessful) {
                                             reloadBonus.value = !reloadBonus.value
                                         } else {
                                             val error = response.errorBody()?.string()
