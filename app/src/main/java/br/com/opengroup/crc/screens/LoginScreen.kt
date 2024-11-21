@@ -101,17 +101,31 @@ fun LoginScreen(navController: NavController) {
                                 }
                             } else {
                                 val error = res.errorBody()?.string()
-                                logFirebaseApi(
-                                    "Erro ao realizar login, ${
-                                        (error) ?: "Erro desconhecido"
-                                    }", email.value
-                                )
-                                withContext(Dispatchers.Main) {
-                                    Toast.makeText(
-                                        navController.context,
-                                        "Erro: ${error ?: "Erro desconhecido"}",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
+                                if (res.code() == 401) {
+                                    logFirebaseApi(
+                                        "Erro ao realizar login, email ou senha incorretos",
+                                        email.value
+                                    )
+                                    withContext(Dispatchers.Main) {
+                                        Toast.makeText(
+                                            navController.context,
+                                            "Email ou senha incorretos",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                } else {
+                                    logFirebaseApi(
+                                        "Erro ao realizar login, ${
+                                            (error) ?: "Erro desconhecido"
+                                        }", email.value
+                                    )
+                                    withContext(Dispatchers.Main) {
+                                        Toast.makeText(
+                                            navController.context,
+                                            "Erro: ${error ?: "Erro desconhecido"}",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
                                 }
                             }
                         } catch (e: Exception) {
