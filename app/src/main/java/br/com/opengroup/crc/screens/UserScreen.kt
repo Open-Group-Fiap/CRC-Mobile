@@ -154,7 +154,7 @@ fun UserScreen(navController: NavController) {
                     textStyle = LabelInput
                 )
                 Button(onClick = {
-                    if (newEmail.value.isEmpty() || newPassword.value.isEmpty() || newQtyResidents.value.isEmpty()) {
+                    if (newEmail.value.isEmpty() || newQtyResidents.value.isEmpty()) {
                         Toast.makeText(
                             navController.context,
                             "Preencha todos os campos",
@@ -180,6 +180,10 @@ fun UserScreen(navController: NavController) {
                                 )
                             )
                             if (res.isSuccessful) {
+                                LocalDatabase(navController.context).saveCredentials(
+                                    newEmail.value,
+                                    password
+                                )
                                 logFirebaseApi(
                                     "Usuário atualizado com sucesso",
                                     LocalDatabase(navController.context).getCredentials().first.toString()
