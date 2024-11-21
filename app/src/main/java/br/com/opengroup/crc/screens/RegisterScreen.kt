@@ -91,7 +91,7 @@ fun RegisterScreen(navController: NavController) {
             OutlinedTextField(
                 value = cpf.value,
                 onValueChange = { cpf.value = it },
-                label = { Text("Cpf", style = LabelInput) },
+                label = { Text("Cpf (só os digitos)", style = LabelInput) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 textStyle = LabelInput
             )

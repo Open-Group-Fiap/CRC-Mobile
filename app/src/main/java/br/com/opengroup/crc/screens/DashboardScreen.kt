@@ -72,13 +72,22 @@ fun DashboardScreen(navController: NavController) {
                         try {
                             val response = faturaApi.randomFatura(id.value)
                             if (response.isSuccessful) {
-                                logFirebaseApi("Fatura gerada com sucesso", id.value)
+                                logFirebaseApi(
+                                    "Fatura gerada com sucesso",
+                                    LocalDatabase(navController.context).getCredentials().first.toString()
+                                )
                                 reloadPoints.value = !reloadPoints.value
                             } else {
-                                logFirebaseApi("Erro ao gerar fatura", id.value)
+                                logFirebaseApi(
+                                    "Erro ao gerar fatura",
+                                    LocalDatabase(navController.context).getCredentials().first.toString()
+                                )
                             }
                         } catch (e: Exception) {
-                            logFirebaseApi("Erro ao gerar fatura ${e.message}", id.value)
+                            logFirebaseApi(
+                                "Erro ao gerar fatura ${e.message}",
+                                LocalDatabase(navController.context).getCredentials().first.toString()
+                            )
                         }
                     }
 
